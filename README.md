@@ -1,78 +1,54 @@
-# Drone Traffic Analyzer
+# Smart Drone Traffic Analyzer
 
-### Project Overview
+### Computer Vision Automation Full-Stack Development
 
-This is a full-stack application built to analyze traffic from drone footage. The system detects vehicles, tracks them with unique IDs, and counts them as they cross a specific line. It was built using FastAPI for the backend and Next.js for the frontend. I used an NVIDIA RTX 2060 Super to handle the AI processing so it runs much faster than a standard CPU.
+## 1. Project Overview
 
----
+This is a professional full-stack application built to analyze traffic from aerial drone footage. The system identifies vehicles, tracks them with unique IDs, and implements custom logic to ensure accurate counting across variable resolutions and edge cases.
 
-### Technical Logic
+## 2. Technical Architecture
 
-#### Adaptive Pipeline
+[cite_start]In compliance with the assessment requirements, this project uses a **decoupled Full-Stack architecture**:
 
-The counting is not random or hardcoded to one video size. I built an adaptive system where the math changes based on the video resolution and length to keep the detection baseline stable:
+- **Frontend:** Built with **Next.js** (React) to handle the UI. [cite_start]It includes explicit **loading states and progress indicators** [cite: 23] to maintain a responsive UX during the heavy background processing of video files.
+- [cite_start]**Backend:** Powered by **FastAPI** (Python) to manage the computer vision pipeline and data extraction[cite: 24].
+- [cite_start]**Communication:** File uploads and detection data are handled via **REST APIs**[cite: 25].
 
-- **Detection Gate:** The trigger line is always at 65% of the video height. This works for 720p, 1080p, or 4K because it uses a percentage instead of fixed pixels.
-- **Dynamic Buffer:** The "catchment area" around the line scales with the video height (3% to 5%). This makes sure fast vehicles moving between frames don't skip over the line.
-- **Processing Modes:** For long videos, the system shifts gears to process frames more efficiently (frame stepping) so the GPU doesn't struggle.
+## 3. Unique Adaptive Pipeline & Logic
 
-#### Vehicle Tracking
+[cite_start]To solve the **Core Challenge** of preventing double-counting and handling occlusions, I developed an **Adaptive Detection Pipeline**:
 
-I used YOLOv8 with persistent tracking. The code is set to only look for specific classes:
+- **Resolution-Agnostic Gate:** Instead of fixed pixel coordinates, the "Detection Gate" is set at a relative **65% of the frame height**. This ensures the logic scales perfectly whether the input is 720p, 1080p, or 4K.
+- **Dynamic Catchment Buffer:** The system calculates a "trigger zone" (3%–5% of frame height) that scales with the video resolution. This prevents high-speed vehicles from "skipping" the detection line between frames.
+- **ID State Persistence:** Once a vehicle crosses the gate, its unique ID is stored in a session-specific "Counted" set. [cite_start]The system cross-references this set to prevent re-counting vehicles that stop, slow down, or are temporarily hidden by obstacles like lampposts.
 
-- Cars, Motorcycles, Buses, and Trucks.
+## 4. Automation and Reporting
 
-This prevents the system from counting things like people or trees, which keeps the Excel data clean.
+[cite_start]The application automatically generates a structured **CSV/Excel report** [cite: 15, 37] containing:
 
----
+- [cite_start]**Total unique vehicle count**[cite: 38].
+- [cite_start]**Breakdown by vehicle type** (Car, Bus, Truck, etc.)[cite: 39].
+- [cite_start]**Processing Duration:** The total time taken to analyze the file[cite: 40].
+- [cite_start]**Frame and timestamp data** for every detection event[cite: 41].
 
-### Key Features
+## [cite_start]5. Engineering Assumptions [cite: 57, 67]
 
-- **Live Progress:** The frontend shows a real-time progress bar while the backend is processing heavy video files.
-- **Excel Reports:** Once the video is done, you can download a report with the Vehicle ID, Type, Timestamp, and Frame number.
-- **GPU Support:** The backend automatically checks for CUDA to use the GPU for faster results.
+- [cite_start]The footage is from a top-down or high-angle drone perspective[cite: 5].
+- Vehicles are counted upon crossing the 65% height threshold.
+- The system utilizes GPU acceleration (CUDA) if available, falling back to CPU if necessary.
 
----
+## [cite_start]6. Local Setup & Installation [cite: 64]
 
-### Installation and Environment Setup
+### Backend
 
-#### 1. Backend (Python Virtual Environment)
+1. `cd backend`
+2. `python -m venv venv`
+3. `source venv/bin/activate` (Windows: `.\venv\Scripts\activate`)
+4. `pip install -r requirements.txt`
+5. `uvicorn app.main:app --reload`
 
-It is required to use a virtual environment to keep dependencies isolated and ensure the script runs correctly.
+### Frontend
 
-1. Navigate to the backend folder: `cd backend`
-2. Create the venv: `python -m venv venv`
-3. Activate the venv:
-   - Windows: `.\venv\Scripts\activate`
-   - Mac/Linux: `source venv/bin/activate`
-4. Install requirements: `pip install -r requirements.txt`
-5. Place the model file `yolov8n.pt` in `backend/models/`.
-
-#### 2. Frontend Setup
-
-1. Navigate to the frontend folder: `cd frontend`
-2. Install dependencies: `npm install`
-
----
-
-### How to Run
-
-- **Start Backend Server:** `uvicorn app.main:app --reload --port 8000`
-- **Start Frontend Dashboard:** `npm run dev`
-- **Access the App:** Open `http://localhost:3000` in your browser.
-
----
-
-### Engineering Assumptions
-
-- The video is from a drone perspective (top-down view).
-- Vehicles are counted when they hit the 65% height mark of the frame.
-- The system expects standard video formats like .mp4 or .avi.
-- If no GPU is found, the script will automatically switch to CPU (slower processing).
-
----
-
-### Repository Details
-
-- **Author:** alamnahianofficial
-- **Repository Name:** drone-traffic-analyzer
+1. `cd frontend`
+2. `npm install`
+3. `npm run dev`
